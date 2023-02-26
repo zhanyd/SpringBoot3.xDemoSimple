@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 1000MB
+  jackson:
+    time-zone: GMT+8 #不然返回客户端会少8小时
+  profiles:
+    active: dev
+
+mybatis:
+  mapper-locations: classpath:com/zhanyd/app/mapping/*.xml
+  type-aliases-package: com.zhanyd.app.model
+
+#pagehelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+    
+logging:
+  config: classpath:logback-spring.xml
+  #level:
+    #com.zhanyd.app.mapper: trace
+    
+    
