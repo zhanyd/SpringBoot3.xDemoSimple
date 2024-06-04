@@ -3,22 +3,24 @@ spring:
     url: jdbc:mysql://localhost:3306/canaan_assets_management?serverTimezone=Asia/Shanghai&useSSL=false
     username: root
     password: root
-    # 使用druid数据源
-    type: com.alibaba.druid.pool.DruidDataSource
+    # 使用HikariCP数据源
     driver-class-name: com.mysql.cj.jdbc.Driver
-    filters: stat
-    maxActive: 20
-    initialSize: 1
-    maxWait: 60000
-    minIdle: 1
-    timeBetweenEvictionRunsMillis: 60000
-    minEvictableIdleTimeMillis: 300000
-    validationQuery: select 'x'
-    testWhileIdle: true
-    testOnBorrow: false
-    testOnReturn: false
-    poolPreparedStatements: true
-    maxOpenPreparedStatements: 20
+    # 数据源类别
+    type: com.zaxxer.hikari.HikariDataSource
+    # 连接池名字
+    hikari.pool-name: GrowUpHikariCP
+    # 最小空闲连接数量
+    hikari.minimum-idle: 10
+    # 空闲连接存活最大时间，默认600000（10分钟）
+    hikari.idle-timeout: 600000
+    # 连接池最大连接数，默认是10
+    hikari.maximum-pool-size: 10
+    # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+    hikari.auto-commit: true
+    # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+    hikari.max-lifetime: 1800000
+    # 数据库连接超时时间,默认30秒，即30000
+    hikari.connection-timeout: 30000
 
 fileUpload:
   #rootPath: D:/upload/file   #windows
