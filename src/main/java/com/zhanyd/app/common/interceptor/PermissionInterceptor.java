@@ -25,7 +25,8 @@ public class PermissionInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception{
         System.out.println("in preHandle");
-        String token = request.getHeader("Authorization");
+        // 从请求头中提取Token
+        String token = extractToken(request);
         System.out.println(request.getRequestURI());
         if(StringHelp.isEmpty(token)){
             responseMessage(response,"token不能为空");
@@ -38,6 +39,24 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 从请求头中提取Token去掉最前面的Bearer
+     * @param request
+     * @return
+     */
+    public String extractToken(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        if(authorization != null) {
+            if(authorization.startsWith("Bearer ")) {
+                return authorization.substring(7);
+            } else {
+                return authorization;
+            }
+        } else {
+            return null;
+        }
     }
 
 
@@ -54,7 +73,6 @@ public class PermissionInterceptor implements HandlerInterceptor {
     /**
      * 发送消息给客户端
      * @param response
-     * @param code
      * @param msg
      * @throws IOException
      */
@@ -68,6 +86,4 @@ public class PermissionInterceptor implements HandlerInterceptor {
         stream.flush();
         stream.close();
     }
-
-
 }

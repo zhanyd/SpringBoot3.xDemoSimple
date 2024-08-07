@@ -7,4 +7,10 @@
 	    from user_info
 	    where unionid = #{unionid}
 	</select>
+
+	<select id="selectByUserName" parameterType="String" resultMap="BaseResultMap">
+		select *
+		from user_info
+		where user_name = #{userName}
+	</select>
 </mapper>

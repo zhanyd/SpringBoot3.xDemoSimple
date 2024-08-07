@@ -54,6 +54,13 @@
 			<artifactId>java-jwt</artifactId>
 			<version>3.3.0</version>
 		</dependency>
+
+		<!-- Argon2 密码哈希算法 -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>
 	</dependencies>
     
     <!-- Package as an executable jar -->

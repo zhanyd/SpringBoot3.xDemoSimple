@@ -1,9 +1,11 @@
 package com.zhanyd.app.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.zhanyd.app.common.ApiResult;
+import com.zhanyd.app.common.util.Argon2Helper;
 import com.zhanyd.app.common.util.JwtUtils;
 import com.zhanyd.app.model.UserInfo;
-import com.zhanyd.app.service.IdentifyingCodeService;
 import com.zhanyd.app.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,9 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import java.util.*;
@@ -31,66 +31,79 @@ public class UserController {
 
     @Autowired
     UserService userService;
-    
-    @Autowired
-    IdentifyingCodeService identifyingCodeService;
 
-    @GetMapping("/login")
-    public ApiResult<Map<String, Object>> login(String code, HttpServletRequest request){
-    	logger.info("微信登录：");
-    	logger.info("code = " + code);
-    	String nickname = "";
-		String headimgurl = "";
-		String unionid = "qwe";
-		
-    	ApiResult<Map<String, Object>> apiResult = new ApiResult<Map<String, Object>>();
+    @PostMapping("/login")
+    public ApiResult<Map<String, Object>> login(@RequestBody UserInfo userInfo, HttpServletRequest request) {
+        ApiResult<Map<String, Object>> apiResult = new ApiResult<>();
+        Map<String, Object> resultMap;
 
-    	//获取tonken和openid
-    	/*String getTokenUrl = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + WeixinHelper.APP_ID + "&secret=" + WeixinHelper.CORPSECRET + "&code=" + code + "&grant_type=authorization_code";
-    	String tokenContent = HttpService.post(getTokenUrl);
-		logger.info("tokenContent = " + tokenContent);
-		JSONObject jsonObject = JSONObject.parseObject(tokenContent);
-		String accessToken = jsonObject.getString("access_token");
-		String openid = jsonObject.getString("openid");
-		logger.info("accessToken = " + accessToken + " openid = " + openid);
+        // UserInfo userInfoSelected = userService.selectByUserName(userInfo.getUserName());
+        UserInfo userInfoSelected = new UserInfo();
+        // 判断该用户是否已经存在
+        if (userInfoSelected != null) {
+            // 验证密码
+           /* if (Argon2Helper.verifyPassword(userInfo.getPassword(), userInfoSelected.getPassword())) {
 
-		//获取用户信息
-		String getUserUrl = "https://api.weixin.qq.com/sns/userinfo?access_token=" + accessToken + "&openid=" + openid + "&lang=zh_CN";
-		String userContent = HttpService.post(getUserUrl);
-		logger.info("userContent = " + userContent);
-		jsonObject = JSONObject.parseObject(userContent);
-		String nickname = jsonObject.getString("nickname");
-		String headimgurl = jsonObject.getString("headimgurl");
-		String unionid = jsonObject.getString("unionid");
-		logger.info("nickname = " + nickname + " unionid = " + unionid + " headimgurl = " + headimgurl);*/
-
-       
-        //判断该用户是否已经存在
-        UserInfo userInfo = userService.selectByUnionid(unionid);
-        if(userInfo == null){
-        	userInfo = new UserInfo();
-        	userInfo.setNickName(nickname);
-        	userInfo.setHeadimgurl(headimgurl);
-        	userInfo.setUnionid(unionid);
-        	userInfo.setCreateTime(new Date());
-        	userService.insertSelective(userInfo);
-        }
-        
-        Map<String, Object> resultMap = new HashMap<String, Object>();
-        //生成token
-        String token = JwtUtils.signJWT(userInfo.getId());
-        if(token == null){
-        	resultMap.put("msg", "生成token失败");
-            return apiResult.fail(resultMap);
-        }else{
-            //logger.info(unionid + " 登录成功");
-        	resultMap.put("userInfo", userInfo);
-        	resultMap.put("token", token);
-            return apiResult.success(resultMap);
+            }*/
+            if (userInfo.getPassword().equals("123456")) {
+                // 生成token
+                resultMap = userService.generateToken(userInfoSelected.getId(), userInfoSelected.getUserName());
+                return apiResult.success(resultMap);
+            } else {
+                // 密码错误，拒绝登录
+                logger.info("{} 用户名或密码错误", userInfo.getUserName());
+                return new ApiResult(500, "用户名或密码错误", null);
+            }
+        } else {
+            return new ApiResult(500, "该用户不存在", null);
         }
     }
-    
-    
-   
+
+    /**
+     * 返回动态路由
+     * @return
+     */
+    @GetMapping("/getAsyncRoutes")
+    public ApiResult<JSONArray> getAsyncRoutes() {
+        ApiResult<JSONArray> apiResult = new ApiResult<JSONArray>();
+        String pagesTextBlock =
+                """
+                        [{
+                          path: "/permission",
+                          meta: {
+                            title: "权限管理",
+                            icon: "ep:lollipop",
+                            rank: 10
+                          },
+                          children: [
+                            {
+                              path: "/permission/page/index",
+                              name: "PermissionPage",
+                              meta: {
+                                title: "页面权限",
+                                roles: ["admin", "common"]
+                              }
+                            },
+                            {
+                              path: "/permission/button/index",
+                              name: "PermissionButton",
+                              meta: {
+                                title: "按钮权限",
+                                roles: ["admin", "common"],
+                                auths: [
+                                  "permission:btn:add",
+                                  "permission:btn:edit",
+                                  "permission:btn:delete"
+                                ]
+                              }
+                            }
+                          ]
+                        }]
+                        """;
+        // 解析JSON字符串
+        JSONArray jsonArray = JSON.parseArray(pagesTextBlock);
+        return apiResult.success(jsonArray);
+    }
+
 
 }

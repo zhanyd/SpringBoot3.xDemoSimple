@@ -16,4 +16,6 @@ public interface UserInfoMapper {
     int updateByPrimaryKey(UserInfo record);
     
     UserInfo selectByUnionid(String unionid);
+
+    UserInfo selectByUserName(String userName);
 }
